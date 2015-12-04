@@ -1,74 +1,74 @@
-import org.apache.tools.ant.filters.*
-
 apply plugin: 'java'
-apply plugin: 'application'
+apply plugin: 'distribution'
+apply plugin: 'jacoco'
+apply plugin: 'findbugs'
+apply plugin: 'pmd'
 apply from: 'eclipse.gradle'
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 repositories {
-  maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-  maven { url "http://repo.maven.apache.org/maven2" }
+  jcenter()
+}
+
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/java')
+        }
+//        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
 }
 
 dependencies {
-  compile 'org.slf4j:slf4j-api:1.7.5',
-	  'org.apache.commons:commons-compress:1.8.1',
-    'commons-logging:commons-logging-api:1.1',
-    'commons-logging:commons-logging:1.1.3',
-    'commons-io:commons-io:2.4',
-    'commons-codec:commons-codec:1.9',
-    'org.apache.httpcomponents:httpclient:4.3.2',
-    'org.apache.httpcomponents:httpmime:4.3.2',
-    'com.martiansoftware:jsap:2.1',
-    'dom4j:dom4j:1.6.1',
-    'commons-net:commons-net:3.3',
-    'org.apache.commons:commons-exec:1.2'
+  compile 'org.springframework.boot:spring-boot-starter:1.3.0.RELEASE'
 
-  runtime 'jaxen:jaxen:1.1.4',
-    'classworlds:classworlds:1.1',
-    'log4j:log4j:1.2.17'
-
-  testCompile 'junit:junit:4.11',
-    'org.mortbay.jetty:jetty:6.1.26',
-    'org.jmock:jmock-junit4:2.5.1'
+  testCompile 'junit:junit:4.11'//, 'org.springframework.boot:spring-boot-starter-test:1.3.0.RELEASE'
 }
 
-applicationDefaultJvmArgs = ["-Dapp.home=..", "-Dversion=${project.version}"]
-mainClassName = "gov.loc.repository.bagit.driver.CommandLineBagDriver"
+task dump(type: Copy){
+  description "Copies this project's dependencies to ${project.buildDir}/dumpedDependencies directory."
+  from configurations.runtime
+  into "${project.buildDir}/dumpedDependencies"
+}
 
-distZip {
-  String baseZipDirectory = archiveName - ("." + extension)
+task integrationTest(type: Test) {
+  description "Runs the integration tests."
+  testClassesDir = sourceSets.integrationTest.output.classesDir
+  classpath = sourceSets.integrationTest.runtimeClasspath
+}
 
-  //include the log properties in a separate folder outside the jar for easy modification
-  into("${baseZipDirectory}/conf"){ 
-    from 'src/assembly/conf'
-    include 'log4j.properties'
-  }
-  
-  into("${baseZipDirectory}"){
-    from '.'
-    include '*.txt'
-    filter { line -> return line.replace('\${bagit.version}', "0.97") }
-    filter { line -> return line.replace('\${pom.version}', project.version) }
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+jacocoTestReport.dependsOn test
+build.dependsOn jacocoTestReport
+
+test { //show test output
+    testLogging.showStandardStreams = true
+}
+
+tasks.withType(Test) {
+//write unit and integration test reports to different directories
+  reports.html.destination = file("${reporting.baseDir}/${name}")
+}
+
+findbugsMain{
+  reports{
+    xml.enabled = false
+    html.enabled = true //we only care about the html since task will fail in jenkins if gradle reports a problem
   }
 }
 
-task srcZip(type: Zip) {
-  classifier "src"
-  from 'src'
-  exclude 'assembly'
-}
-tasks.distZip.dependsOn srcZip
+findbugsTest.enabled = false //not enabled because sometimes you need to do bad practices in tests
 
-//due to http://issues.gradle.org/browse/GRADLE-2333 need to do a small hack to add the config folder to the generated script's classpath
-startScripts {
-  classpath += files('src/dist/XX_CONFIG_PLACEHOLDER_XX')
-  doLast {
-    def windowsScriptFile = file getWindowsScript()
-    def unixScriptFile    = file getUnixScript()
-    windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\XX_CONFIG_PLACEHOLDER_XX', '%APP_HOME%\\conf')
-    unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/XX_CONFIG_PLACEHOLDER_XX', '$APP_HOME/conf')
-  }
+pmd {
+  ruleSets = ["java-basic", "java-braces"]
 }

@@ -11,8 +11,8 @@ REQUIREMENTS:
 Java 6
 
 BUILD:
-Inside the bagit-java root directory, run 'mvn package'. This will create two .zip files,
-bagit-X.X.X-bin.zip and bagit-X.X.X-src.zip. 
+Inside the bagit-java root directory(hence referred to as <ROOT_DIR>), run 'gradle distZip'. This will create one .zip file,
+bagit-X.X.X-bin.zip. This file is located in <ROOT_DIR>/build/distributions
 
 COMMANDLINE:
 A commandline interface is provided to perform various operations on bag. Unzip
@@ -23,16 +23,7 @@ encounter memory issues, the memory allocation can be increased in the scripts f
 in the bin directory.
 
 NOTE IF USING WITH ECLIPSE:
-There is a known defect with m2eclipse (https://issues.sonatype.org/browse/MNGECLIPSE-1091)
-that will cause problems with this project.  To work around the problem, in Eclipse select
-the project's Properties, then Maven and unselect "Skip Maven compiler plugin when processing
-resources".
-
-FILENAMES WITH BACKSLASHES (\):
-The BagIt specification requires that the only valid path separator is the forward slash /. Thus, a
-backslash (\) in a file name is completely legal.  However, due to a shortcoming in Commons VFS
-backslashes are supported by BIL.  Given platform compatability issues, this is not necessarily
-a bad thing.
+simply run 'gradle eclipse' in the root directory in order to generate the eclipse .project and .classpath files
 
 RELEASE NOTES:
 
