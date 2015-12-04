@@ -1,8 +1,18 @@
+buildscript {
+  repositories {
+      jcenter()
+  }
+  dependencies {
+      classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.3.RELEASE")
+  }
+}
+
 apply plugin: 'java'
 apply plugin: 'distribution'
 apply plugin: 'jacoco'
 apply plugin: 'findbugs'
 apply plugin: 'pmd'
+apply plugin: 'spring-boot'
 apply from: 'eclipse.gradle'
 
 sourceCompatibility = 1.7
