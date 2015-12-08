@@ -38,7 +38,7 @@ public class BagReader {
   }
   
   protected static File getDotBagDirectory(File rootDir) throws InvalidBagStructureException{
-    File dotBagDir = new File(rootDir, StructureConstants.SPECIAL_FOLDER_NAME);
+    File dotBagDir = new File(rootDir, StructureConstants.DOT_BAG_FOLDER_NAME);
     
     if(!dotBagDir.exists() || !dotBagDir.isDirectory()){
       throw new InvalidBagStructureException(".bag directory does not exist or is not a directory!");
@@ -81,12 +81,11 @@ public class BagReader {
   
   protected static Map<String, String> getBagInfo(File dotBagDir) throws InvalidBagStructureException, IOException{
     File bagInfoFile = new File(dotBagDir, StructureConstants.BAG_INFO_FILE_NAME);
+    Map<String, String> bagInfoMap = new HashMap<>();
     
-    if(!bagInfoFile.exists() || bagInfoFile.isDirectory()){
-      throw new InvalidBagStructureException(".bag directory is missing " + StructureConstants.BAG_INFO_FILE_NAME + " file!");
+    if(bagInfoFile.exists() && !bagInfoFile.isDirectory()){
+      bagInfoMap = readKeyValueFile(bagInfoFile, ":");
     }
-    
-    Map<String, String> bagInfoMap = readKeyValueFile(bagInfoFile, ":");
     
     return bagInfoMap;
   }

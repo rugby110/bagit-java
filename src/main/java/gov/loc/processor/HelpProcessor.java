@@ -17,30 +17,31 @@ public class HelpProcessor{
     }
     
     switch(args[0]){
-    case "create":
-      printCreateHelp();
-      break;
-    case "verify":
-      break;
-    case "add":
-      break;
-    case "remove":
-    case "rm":
-      break;
-    case "list":
-    case "ls":
-      break;
-    case "help":
-      break;
-    default:
-        logger.error("Unrecognized command [{}]!", args[0]);
+      case "create":
+        printCreateHelp();
+        break;
+      case "verify":
+        break;
+      case "add":
+        break;
+      case "remove":
+      case "rm":
+        break;
+      case "list":
+      case "ls":
+        break;
+      case "help":
+        break;
+      default:
+          logger.error("Unrecognized command [{}]!", args[0]);
     }
   }
   
   protected static void printCreateHelp(){
     String createUsage = "Usage: bagit create [--include <REGEX>] [--exclude <REGEX>]\n"
         +                "  creates a bag in the current directory\n"
-        +                "  --include - An optional argument for only including files that match the given REGEX. Overrides any given excludes.\n"
+        +                "  You may only pick ONE of the following:"
+        +                "  --include - An optional argument for only including files that match the given REGEX.\n"
         +                "  --exclude - An optional argument for excluding files that match the given REGEX.";
     logger.info(createUsage);
   }
@@ -67,19 +68,41 @@ public class HelpProcessor{
         +                "  Alias: rm\n"
         +                "  removes files or key value pair information from the bag. You MUST choose one of the following:\n"
         +                "  --files - specify which files or directories to be removed from the bag. If you choose a directory all files and subdirectories are removed from that directory.\n"
-        +                "  --info - specify one or more key value pairs to be removed from the bag information.";
+        +                "  --info - specify one or more keys in the key value pairs to be removed from the bag information.";
     logger.info(removeUsage);
   }
   
   protected static void printListHelp(){
-    //TODO
-    String listUsage = "";
+    String listUsage = "Usage: bagit list [--files] [--info] [--missing]\n"
+        +              "  Alias: ls\n"
+        +              "  List files or key value pair information from the bag.\n"
+        +              "  You may also list files in the current directory(and subdirectories) that are not currently included in the bag.\n"
+        +              "  Defaults to --files\n"
+        +              "  --files - list all files that are currently included in the bag\n"
+        +              "  --info - list all the key value pair information in the bag\n"
+        +              "  --missing - list all the files that are NOT currently included in the bag";
     logger.info(listUsage);
   }
   
   protected static void printHelpHelp(){
-    //TODO
-    String helpUsage = "";
+    //<help> <COMMAND> - show more details for any of the commands.
+    String helpUsage = "Usage: bagit help COMMAND\n"
+        +              "  Show more details for any of the commands\n"
+        +              "  Where COMMAND is command you wish to know detailed help about.\n"
+        +              "  Available commands are: create, verify, add, remove, list, help";
     logger.info(helpUsage);
+  }
+  
+  public static void printUsage(){
+    String usage = "Usage: bagit <COMMAND> [ARGS]\n"
+        +          "       Where <COMMAND> is any of the below commands and [ARGS] are option arguments for those commands.\n"
+        +          "         <create> [--include --exclude] - create a bag\n"
+        +          "         <verify> [--all --files --tags] - verify the files/tags match their hash.\n"
+        +          "         <add> [--files --info] - add files/info to bag.\n"
+        +          "         <remove | rm> [--files --info] - remove files/info from bag.\n"
+        +          "         <list | ls> [--files --info --missing] - list files/tags in bag. Also can list files not in bag.\n"
+        +          "         <help> <COMMAND> - show more details for any of the commands.";
+    
+    logger.info(usage);
   }
 }

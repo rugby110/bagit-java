@@ -19,7 +19,7 @@ import gov.loc.structure.StructureConstants;
 public class BagWriter {
   
   /**
-   * returns true if it successfully wrote bag to filesystem 
+   * returns true if it successfully wrote bag to file system 
    * @throws IOException 
    */
   public static boolean write(Bag bag) throws IOException{
@@ -34,7 +34,7 @@ public class BagWriter {
   }
   
   protected static File createDotBagDirectory(File rootDir){
-    File dotBagDir = new File(rootDir, StructureConstants.SPECIAL_FOLDER_NAME);
+    File dotBagDir = new File(rootDir, StructureConstants.DOT_BAG_FOLDER_NAME);
     dotBagDir.mkdir();
     
     return dotBagDir;
@@ -70,8 +70,10 @@ public class BagWriter {
   }
   
   protected static void writeMapToFile(File output, Map<String,String> map, char delimiter) throws IOException{
-    //TODO delete old if exists?
-    
+    if(output.exists()){
+      output.delete();
+    }
+
     try(BufferedWriter writer = Files.newBufferedWriter(Paths.get(output.toURI()), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND)){
       for(Entry<String,String> entry: map.entrySet()){
         StringBuilder line = new StringBuilder();

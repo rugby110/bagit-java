@@ -13,6 +13,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import gov.loc.domain.Bag;
@@ -22,6 +23,7 @@ import gov.loc.hash.Hasher;
  * Handy factory methods for creating {@link Bag}
  */
 public class BagFactory {
+  private static final String BAG_VERSION = "1.0";
 
   /**
    *  creates a {@link Bag} from all the files in the @param rootDir using @param algorithm </br>
@@ -29,9 +31,11 @@ public class BagFactory {
    * @throws IOException 
    * @throws NoSuchAlgorithmException 
    */
-  public Bag createBag(File rootDir, String algorithm) throws IOException, NoSuchAlgorithmException{
+  public static Bag createBag(File rootDir, String algorithm) throws IOException, NoSuchAlgorithmException{
     Bag bag = new Bag();
     bag.setHashAlgorithm(algorithm);
+    bag.setRootDir(rootDir);
+    bag.setVersion(BAG_VERSION);
     
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
     Map<String, String> manifestMap = computeManifestList(Paths.get(rootDir.toURI()), algorithm, messageDigest);
@@ -40,7 +44,7 @@ public class BagFactory {
     return bag;
   }
   
-  protected Map<String, String> computeManifestList(final Path rootDir, String algorithm, final MessageDigest messageDigest) throws IOException{
+  protected static Map<String, String> computeManifestList(final Path rootDir, String algorithm, final MessageDigest messageDigest) throws IOException{
     final Map<String, String> manifestMap = new HashMap<>();
     
     Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>(){
@@ -56,6 +60,26 @@ public class BagFactory {
        }
     });
     return manifestMap;
+  }
+  
+  public static Bag createBag(Path rootDir, List<Path> files, String algorithm) throws IOException, NoSuchAlgorithmException{
+    Bag bag = new Bag();
+    bag.setRootDir(rootDir.toFile());
+    bag.setVersion(BAG_VERSION);
+    bag.setHashAlgorithm(algorithm);
+    
+    MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
+    Map<String, String> hashToFilenameMap = new HashMap<>();
+    
+    for(Path file:files){
+      InputStream inputStream = Files.newInputStream(file, StandardOpenOption.READ);
+      String hash = Hasher.hash(inputStream, messageDigest);
+      Path relative = file.relativize(rootDir);
+      hashToFilenameMap.put(hash, relative.toString());
+    }
+    bag.setFileManifest(hashToFilenameMap);
+    
+    return bag;
   }
 }
 
