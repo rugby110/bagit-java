@@ -22,6 +22,9 @@ import gov.loc.reader.BagReader;
 import gov.loc.structure.StructureConstants;
 import gov.loc.writer.BagWriter;
 
+/**
+ * Handles adding files or key value pair information to a bag.
+ */
 public class AddProcessor {
   private static final Logger logger = LoggerFactory.getLogger(AddProcessor.class);
 

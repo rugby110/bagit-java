@@ -19,6 +19,9 @@ import gov.loc.error.InvalidBagStructureException;
 import gov.loc.reader.BagReader;
 import gov.loc.structure.StructureConstants;
 
+/**
+ * Handles listing files, key value pair information, or files not currently in the bag (i.e. missing).
+ */
 public class ListProcessor {
   private static final Logger logger = LoggerFactory.getLogger(ListProcessor.class);
 

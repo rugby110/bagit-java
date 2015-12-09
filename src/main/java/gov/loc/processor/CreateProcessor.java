@@ -18,6 +18,9 @@ import gov.loc.domain.Bag;
 import gov.loc.factory.BagFactory;
 import gov.loc.writer.BagWriter;
 
+/**
+ * Handles creating a bag.
+ */
 public class CreateProcessor {
   private static final Logger logger = LoggerFactory.getLogger(CreateProcessor.class);
   

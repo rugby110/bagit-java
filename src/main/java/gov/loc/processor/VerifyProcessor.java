@@ -19,6 +19,9 @@ import gov.loc.error.InvalidBagStructureException;
 import gov.loc.hash.Hasher;
 import gov.loc.reader.BagReader;
 
+/**
+ * Verifies that files in a bag have not changed.
+ */
 public class VerifyProcessor {
   private static final Logger logger = LoggerFactory.getLogger(VerifyProcessor.class);
 

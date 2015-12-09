@@ -20,6 +20,9 @@ import gov.loc.error.InvalidBagStructureException;
 import gov.loc.reader.BagReader;
 import gov.loc.structure.StructureConstants;
 
+/**
+ * Handles removing files or key value pair information from a bag.
+ */
 public class RemoveProcessor {
   private static final Logger logger = LoggerFactory.getLogger(RemoveProcessor.class);
 

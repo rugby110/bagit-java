@@ -3,6 +3,9 @@ package gov.loc.processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Handles displaying generic and advanced help messages.
+ */
 public class HelpProcessor{
   private static final Logger logger = LoggerFactory.getLogger(HelpProcessor.class);
   
