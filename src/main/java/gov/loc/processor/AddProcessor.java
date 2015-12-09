@@ -94,7 +94,7 @@ public class AddProcessor {
     bag.getFileManifest().put(hash, filePath);
   }
 
-  protected static void addInfo(String[] args, Bag bag) throws IOException {
+  protected static void addInfo(String[] args, Bag bag) throws IOException, NoSuchAlgorithmException {
     for(int index=1; index<args.length; index++){
       String[] parts = args[index].split("=");
       if(parts.length != 2){

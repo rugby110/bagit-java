@@ -3,14 +3,19 @@ package gov.loc.writer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import gov.loc.domain.Bag;
+import gov.loc.hash.Hasher;
 import gov.loc.structure.StructureConstants;
 
 /**
@@ -19,16 +24,18 @@ import gov.loc.structure.StructureConstants;
 public class BagWriter {
   
   /**
-   * returns true if it successfully wrote bag to file system 
+   * returns true if it successfully wrote bag to file system</br>
+   * Note: when writing the tagManifest file it ignores what is currently stored in bag and calculates a new one after writing the other files. 
    * @throws IOException 
+   * @throws NoSuchAlgorithmException 
    */
-  public static boolean write(Bag bag) throws IOException{
+  public static boolean write(Bag bag) throws IOException, NoSuchAlgorithmException{
     File dotBagDir = createDotBagDirectory(bag.getRootDir());
     
     writeBagit(dotBagDir, bag.getVersion());
     writeBagInfo(dotBagDir, bag.getBagInfo());
     writeFileManifest(dotBagDir, bag.getFileManifest(), bag.getHashAlgorithm());
-    writeTagManifest(dotBagDir, bag.getTagManifest(), bag.getHashAlgorithm());
+    writeTagManifest(dotBagDir, bag.getHashAlgorithm()); //TODO fix me
     
     return true;
   }
@@ -59,8 +66,18 @@ public class BagWriter {
     writeManifest(dotBagDir, manifestFileName, manifest);
   }
   
-  protected static void writeTagManifest(File dotBagDir, Map<String,String> manifest, String algorithm) throws IOException{
+  protected static void writeTagManifest(File dotBagDir, String algorithm) throws IOException, NoSuchAlgorithmException{
+    Map<String,String> manifest = new HashMap<>();
+    MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
+    
+    for(File file : dotBagDir.listFiles()){
+      InputStream inputStream = Files.newInputStream(Paths.get(file.toURI()), StandardOpenOption.READ);
+      String hash = Hasher.hash(inputStream, messageDigest);
+      manifest.put(hash, file.getName());
+    }
+    
     String manifestFileName = StructureConstants.TAG_MANIFEST_FILE_NAME_PREFIX + algorithm + StructureConstants.TAG_MANIFEST_FILE_NAME_SUFFIX;
+    
     writeManifest(dotBagDir, manifestFileName, manifest);
   }
   

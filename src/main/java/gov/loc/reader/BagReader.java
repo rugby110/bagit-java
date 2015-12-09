@@ -136,10 +136,9 @@ public class BagReader {
   
   /**
    * Converts old versions of bagit spec to {@link Bag} 
-   * @throws InvalidBagStructureException
    */
-  public static Bag convertBag(File directory) throws InvalidBagStructureException{
+  public static Bag convertBag(File directory) throws Exception{
     //TODO
-    throw new InvalidBagStructureException("Not yet implemented!");
+    throw new Exception("Not yet implemented!");
   }
 }

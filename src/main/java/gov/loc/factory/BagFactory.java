@@ -53,7 +53,7 @@ public class BagFactory {
            if(!attrs.isDirectory()){
              InputStream inputStream = Files.newInputStream(file, StandardOpenOption.READ);
              String hash = Hasher.hash(inputStream, messageDigest);
-             Path relative = file.relativize(rootDir);
+             Path relative = rootDir.relativize(file);
              manifestMap.put(hash, relative.toString());
            }
            return FileVisitResult.CONTINUE;
