@@ -11,10 +11,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import gov.loc.domain.Bag;
+import gov.loc.error.ArgumentException;
 import gov.loc.factory.BagFactory;
 import gov.loc.writer.BagWriter;
 
@@ -22,7 +20,6 @@ import gov.loc.writer.BagWriter;
  * Handles creating a bag.
  */
 public class CreateProcessor {
-  private static final Logger logger = LoggerFactory.getLogger(CreateProcessor.class);
   
   public static void create(String[] args) throws IOException, NoSuchAlgorithmException{
     switch (args.length){
@@ -33,8 +30,7 @@ public class CreateProcessor {
         handleOneArgument(args);
         break;
       default:
-        logger.error("Inproper amount of arguments to create. Run 'bagit help create' for more info.");
-        break;
+        throw new ArgumentException("Inproper amount of arguments to create. Run 'bagit help create' for more info.");
     }
   }
   
@@ -46,9 +42,7 @@ public class CreateProcessor {
       createWithOnlyExclude(args[1]);
     }
     else{
-      logger.error("Unrecognized argument {} for create!", args[0]);
-      HelpProcessor.printUsage();
-      System.exit(-1);
+      throw new ArgumentException("Unrecognized argument " + args[0] + " for create!");
     }
   }
   
@@ -70,7 +64,7 @@ public class CreateProcessor {
     BagWriter.write(bag);
   }
   
-  protected static void createWithOnlyExclude(final String excludeRegex) throws IOException{
+  protected static void createWithOnlyExclude(final String excludeRegex) throws IOException, NoSuchAlgorithmException{
     Path rootDir = Paths.get(System.getProperty("user.dir"));
     final List<Path> pathsIncluded = new ArrayList<>();
     
@@ -84,6 +78,7 @@ public class CreateProcessor {
        }
     });
     
-    //TODO create with list...
+    Bag bag = BagFactory.createBag(rootDir, pathsIncluded, "sha1");
+    BagWriter.write(bag);
   }
 }

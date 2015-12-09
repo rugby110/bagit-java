@@ -10,10 +10,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import gov.loc.domain.Bag;
+import gov.loc.error.ArgumentException;
 import gov.loc.error.IntegrityException;
 import gov.loc.error.InvalidBagStructureException;
 import gov.loc.hash.Hasher;
@@ -23,12 +21,9 @@ import gov.loc.reader.BagReader;
  * Verifies that files in a bag have not changed.
  */
 public class VerifyProcessor {
-  private static final Logger logger = LoggerFactory.getLogger(VerifyProcessor.class);
-
   public static void verify(String[] args) throws InvalidBagStructureException, IOException, NoSuchAlgorithmException, IntegrityException{
     if(args.length > 1){
-      logger.error("Only one argument is allowed for verify. Run 'bagit help verify' for more info.");
-      System.exit(-1);
+      throw new ArgumentException("Only one argument is allowed for verify. Run 'bagit help verify' for more info.");
     }
     if(args.length == 0){
       verifyAll();
@@ -45,7 +40,7 @@ public class VerifyProcessor {
           verifyTags();
           break;
         default:
-          logger.error("Unrecognized argument {}! Run 'bagit help verify' for more info.", args[0]);
+          throw new ArgumentException("Unrecognized argument " + args[0] +"! Run 'bagit help verify' for more info.");
       }
     }
   }

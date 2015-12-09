@@ -16,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.loc.domain.Bag;
+import gov.loc.error.ArgumentException;
 import gov.loc.error.InvalidBagStructureException;
+import gov.loc.error.NonexistentBagException;
 import gov.loc.hash.Hasher;
 import gov.loc.reader.BagReader;
 import gov.loc.structure.StructureConstants;
@@ -29,11 +31,14 @@ public class AddProcessor {
   private static final Logger logger = LoggerFactory.getLogger(AddProcessor.class);
 
   public static void add(String[] args) throws InvalidBagStructureException, IOException, NoSuchAlgorithmException {
+    if(args.length<1){
+      throw new ArgumentException("The 'add' command requires at least one argument! Run 'bagit help add' for details.");
+    }
+    
     File currentDir = new File(System.getProperty("user.dir"));
     File dotBagDir = new File(currentDir, StructureConstants.DOT_BAG_FOLDER_NAME);
     if (!dotBagDir.exists() || !dotBagDir.isDirectory()) {
-      logger.error("Can not add files, directories, or info to nonexistent bag! Please create a bag first.");
-      System.exit(-1);
+      throw new NonexistentBagException("Can not add files, directories, or info to nonexistent bag! Please create a bag first.");
     }
 
     Bag bag = BagReader.createBag(currentDir);
@@ -46,19 +51,12 @@ public class AddProcessor {
       addInfo(args, bag);
       break;
     default:
-      logger.error("Unrecognized argument {}! Run 'bagit help create' for more info.", args[0]);
-      System.exit(-1);
+      throw new ArgumentException("Unrecognized argument "+ args[0] +"! Run 'bagit help create' for more info.");
     }
   }
 
   protected static void addFiles(String[] args, Bag bag) throws IOException, NoSuchAlgorithmException {
-    String hashAlgorithm = "sha1";
-    if (bag.getHashAlgorithm() != null) {
-      hashAlgorithm = bag.getHashAlgorithm();
-    } else {
-      bag.setHashAlgorithm(hashAlgorithm);
-    }
-    MessageDigest messageDigest = MessageDigest.getInstance(hashAlgorithm);
+    MessageDigest messageDigest = MessageDigest.getInstance(bag.getHashAlgorithm());
     
     for (int index = 1; index < args.length; index++) {
       File currentFile = new File(bag.getRootDir(), args[index]);
@@ -101,8 +99,7 @@ public class AddProcessor {
     for(int index=1; index<args.length; index++){
       String[] parts = args[index].split("=");
       if(parts.length != 2){
-        logger.error("argument {} does not conform to the pattern <KEY>=<VALUE>!", args[index]);
-        System.exit(-1);
+        throw new ArgumentException("argument " + args[index] + " does not conform to the pattern <KEY>=<VALUE>!");
       }
       
       bag.getBagInfo().put(parts[0], parts[1]);

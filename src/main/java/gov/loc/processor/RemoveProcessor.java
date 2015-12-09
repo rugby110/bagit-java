@@ -12,11 +12,10 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import gov.loc.domain.Bag;
+import gov.loc.error.ArgumentException;
 import gov.loc.error.InvalidBagStructureException;
+import gov.loc.error.NonexistentBagException;
 import gov.loc.reader.BagReader;
 import gov.loc.structure.StructureConstants;
 
@@ -24,14 +23,11 @@ import gov.loc.structure.StructureConstants;
  * Handles removing files or key value pair information from a bag.
  */
 public class RemoveProcessor {
-  private static final Logger logger = LoggerFactory.getLogger(RemoveProcessor.class);
-
   public static void remove(String[] args) throws InvalidBagStructureException, IOException {
     File currentDir = new File(System.getProperty("user.dir"));
     File dotBagDir = new File(currentDir, StructureConstants.DOT_BAG_FOLDER_NAME);
     if (!dotBagDir.exists() || !dotBagDir.isDirectory()) {
-      logger.error("Can not remove files, directories, or info to nonexistent bag! Please create a bag first.");
-      System.exit(-1);
+      throw new NonexistentBagException("Can not remove files, directories, or info to nonexistent bag! Please create a bag first.");
     }
 
     Bag bag = BagReader.createBag(currentDir);
@@ -44,8 +40,7 @@ public class RemoveProcessor {
       removeInfo(args, bag);
       break;
     default:
-      logger.error("Unrecognized argument {}! Run 'bagit help remove' for more info.", args[0]);
-      System.exit(-1);
+      throw new ArgumentException("Unrecognized argument " + args[0] + "! Run 'bagit help remove' for more info.");
     }
   }
   

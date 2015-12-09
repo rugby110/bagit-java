@@ -3,6 +3,8 @@ package gov.loc.processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.loc.error.ArgumentException;
+
 /**
  * Handles displaying generic and advanced help messages.
  */
@@ -11,12 +13,11 @@ public class HelpProcessor{
   
   public static void help(String[] args){
     if(args.length == 0){
-      logger.error("help command requires the name of a command as the argument!");
-      System.exit(-1);
+      throw new ArgumentException("help command requires the name of a command as the argument!");
     }
     
     if(args.length > 1){
-      logger.error("help command can only display one command at a time!");
+      throw new ArgumentException("help command can only display one command at a time!");
     }
     
     switch(args[0]){
@@ -24,26 +25,31 @@ public class HelpProcessor{
         printCreateHelp();
         break;
       case "verify":
+        printVerifyHelp();
         break;
       case "add":
+        printAddHelp();
         break;
       case "remove":
       case "rm":
+        printRemoveHelp();
         break;
       case "list":
       case "ls":
+        printListHelp();
         break;
       case "help":
+        printHelpHelp();
         break;
       default:
-          logger.error("Unrecognized command [{}]!", args[0]);
+        throw new ArgumentException("Unrecognized command " + args[0]);
     }
   }
   
   protected static void printCreateHelp(){
     String createUsage = "Usage: bagit create [--include <REGEX>] [--exclude <REGEX>]\n"
         +                "  creates a bag in the current directory\n"
-        +                "  You may only pick ONE of the following:"
+        +                "  You may only pick ONE of the following:\n"
         +                "  --include - An optional argument for only including files that match the given REGEX.\n"
         +                "  --exclude - An optional argument for excluding files that match the given REGEX.";
     logger.info(createUsage);
@@ -88,7 +94,6 @@ public class HelpProcessor{
   }
   
   protected static void printHelpHelp(){
-    //<help> <COMMAND> - show more details for any of the commands.
     String helpUsage = "Usage: bagit help COMMAND\n"
         +              "  Show more details for any of the commands\n"
         +              "  Where COMMAND is command you wish to know detailed help about.\n"

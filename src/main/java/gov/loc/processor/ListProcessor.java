@@ -15,7 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.loc.domain.Bag;
+import gov.loc.error.ArgumentException;
 import gov.loc.error.InvalidBagStructureException;
+import gov.loc.error.NonexistentBagException;
 import gov.loc.reader.BagReader;
 import gov.loc.structure.StructureConstants;
 
@@ -26,20 +28,10 @@ public class ListProcessor {
   private static final Logger logger = LoggerFactory.getLogger(ListProcessor.class);
 
   public static void list(String[] args) throws InvalidBagStructureException, IOException {
-//    String listUsage = "Usage: bagit list [--files] [--info] [--missing]\n"
-//        +              "  Alias: ls\n"
-//        +              "  List files or key value pair information from the bag.\n"
-//        +              "  You may also list files in the current directory(and subdirectories) that are not currently included in the bag.\n"
-//        +              "  Defaults to --files\n"
-//        +              "  --files - list all files that are currently included in the bag\n"
-//        +              "  --info - list all the key value pair information in the bag\n"
-//        +              "  --missing - list all the files that are NOT currently included in the bag";
-    
     File currentDir = new File(System.getProperty("user.dir"));
     File dotBagDir = new File(currentDir, StructureConstants.DOT_BAG_FOLDER_NAME);
     if (!dotBagDir.exists() || !dotBagDir.isDirectory()) {
-      logger.error("Not currently in a bagged directory! Please create a bag first.");
-      System.exit(-1);
+      throw new NonexistentBagException("Not currently in a bagged directory! Please create a bag first.");
     }
     
     Bag bag = BagReader.createBag(currentDir);
@@ -56,8 +48,7 @@ public class ListProcessor {
           listMissing(bag);
           break;
         default:
-          logger.error("Unrecognized argument {}! Run 'bagit help list' for more info.");
-          System.exit(-1);
+          throw new ArgumentException("Unrecognized argument {}! Run 'bagit help list' for more info.");
       }
     }
     else{
