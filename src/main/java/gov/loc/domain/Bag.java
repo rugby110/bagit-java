@@ -23,12 +23,9 @@ public class Bag {
   
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (!(obj instanceof Bag))
-      return false;
+    if (this == obj){return true;}
+    if (obj == null){return false;}
+    if (!(obj instanceof Bag)){return false;}
     Bag other = (Bag) obj;
     return Objects.equals(version, other.getVersion()) && 
         Objects.equals(rootDir, other.getRootDir()) && 
