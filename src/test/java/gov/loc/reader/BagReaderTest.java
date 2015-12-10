@@ -14,7 +14,7 @@ public class BagReaderTest extends Assert {
   
   @Test
   public void testRead() throws Exception{
-    URL url = this.getClass().getClassLoader().getResource("bags/v1_0");
+    URL url = this.getClass().getClassLoader().getResource("bags/v1_0/complete");
     File directory = new File(url.toURI());
     
     Bag expectedBag = new Bag();

@@ -8,7 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -18,12 +20,13 @@ import gov.loc.error.InvalidBagStructureException;
 import gov.loc.error.NonexistentBagException;
 import gov.loc.reader.BagReader;
 import gov.loc.structure.StructureConstants;
+import gov.loc.writer.BagWriter;
 
 /**
  * Handles removing files or key value pair information from a bag.
  */
 public class RemoveProcessor {
-  public static void remove(String[] args) throws InvalidBagStructureException, IOException {
+  public static void remove(String[] args) throws InvalidBagStructureException, IOException, NoSuchAlgorithmException {
     File currentDir = new File(System.getProperty("user.dir"));
     File dotBagDir = new File(currentDir, StructureConstants.DOT_BAG_FOLDER_NAME);
     if (!dotBagDir.exists() || !dotBagDir.isDirectory()) {
@@ -42,15 +45,20 @@ public class RemoveProcessor {
     default:
       throw new ArgumentException("Unrecognized argument " + args[0] + "! Run 'bagit help remove' for more info.");
     }
+    
+    BagWriter.write(bag);
   }
   
   protected static void removeFiles(String[] args, Bag bag) throws IOException{
     final Path rootDir = Paths.get(bag.getRootDir().toURI());
     Set<String> fileNames = getFilenames(args, rootDir);
     
-    for(Entry<String,String> entry:bag.getFileManifest().entrySet()){
+    //doing it this way to avoid concurrent modification exception
+    Iterator<Entry<String, String>> iterator = bag.getFileManifest().entrySet().iterator();
+    while(iterator.hasNext()){
+      Entry<String,String> entry = iterator.next();
       if(fileNames.contains(entry.getValue())){
-        bag.getFileManifest().remove(entry.getKey());
+        iterator.remove();
       }
     }
   }
@@ -66,7 +74,7 @@ public class RemoveProcessor {
           @Override
           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                if(!attrs.isDirectory()){
-                 fileNames.add(file.relativize(rootDir).toString());
+                 fileNames.add(rootDir.relativize(file).toString());
                }
                return FileVisitResult.CONTINUE;
            }

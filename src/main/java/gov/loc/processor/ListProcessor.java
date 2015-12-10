@@ -48,7 +48,7 @@ public class ListProcessor {
           listMissing(bag);
           break;
         default:
-          throw new ArgumentException("Unrecognized argument {}! Run 'bagit help list' for more info.");
+          throw new ArgumentException("Unrecognized argument " + args[0] + "! Run 'bagit help list' for more info.");
       }
     }
     else{
@@ -66,7 +66,7 @@ public class ListProcessor {
   protected static void listInfo(Bag bag){
     logger.info("Bag information:");
     for(Entry<String,String> entry : bag.getBagInfo().entrySet()){
-      logger.info("  {}", entry.getValue());
+      logger.info("  {}:{}", entry.getKey(), entry.getValue());
     }
   }
   
@@ -78,8 +78,8 @@ public class ListProcessor {
     Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>(){
       @Override
       public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        String relativePath = file.relativize(rootDir).toString();
-        if(!attrs.isDirectory() && !files.contains(relativePath)){
+        String relativePath = rootDir.relativize(file).toString();
+        if(!attrs.isDirectory() && !files.contains(relativePath) && !relativePath.startsWith(StructureConstants.DOT_BAG_FOLDER_NAME)){
            logger.info("  {}", relativePath);
         }
         return FileVisitResult.CONTINUE;

@@ -18,7 +18,7 @@ public class BagReaderWriterTest extends Assert {
   
   @Test
   public void testReaderWriter() throws Exception{
-    URL url = this.getClass().getClassLoader().getResource("bags/v1_0");
+    URL url = this.getClass().getClassLoader().getResource("bags/v1_0/complete");
     Bag bag = BagReader.createBag(new File(url.toURI()));
     bag.setRootDir(folder.getRoot());
     BagWriter.write(bag);
