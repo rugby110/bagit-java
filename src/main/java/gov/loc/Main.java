@@ -29,8 +29,7 @@ public class Main {
     try {
       doCommand(args[0], commandArgs);
     } catch (Exception e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      logger.error(e.getMessage());
     }
   }
 
