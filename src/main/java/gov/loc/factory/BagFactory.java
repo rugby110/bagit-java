@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,20 +34,37 @@ public class BagFactory {
     bag.setHashAlgorithm(algorithm);
     
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
-    Map<String, String> hashToFilenameMap = new HashMap<>();
-    
-    for(Path file:files){
-      InputStream inputStream = Files.newInputStream(file, StandardOpenOption.READ);
-      String hash = Hasher.hash(inputStream, messageDigest);
-      Path relative = file.relativize(rootDir);
-      hashToFilenameMap.put(hash, relative.toString());
-    }
+    Map<String, String> hashToFilenameMap = hashFiles(files, messageDigest, rootDir);
     bag.setFileManifest(hashToFilenameMap);
     
     bag.setBagInfo(new HashMap<String,String>());
     bag.setTagManifest(new HashMap<String, String>());
     
     return bag;
+  }
+  
+  protected static Map<String,String> hashFiles(List<Path> files, MessageDigest messageDigest, Path rootDir) throws IOException{
+    Map<String, String> hashToFilenameMap = new HashMap<>();
+    
+    for(int index=0; index<files.size(); index++){
+      printPercentDone(index, files.size());
+      Path file = files.get(index);
+      InputStream inputStream = Files.newInputStream(file, StandardOpenOption.READ);
+      String hash = Hasher.hash(inputStream, messageDigest);
+      Path relative = rootDir.relativize(file);
+      hashToFilenameMap.put(hash, relative.toString());
+    }
+    
+    return hashToFilenameMap;
+  }
+  
+  protected static void printPercentDone(int index, int total){
+    int percentage = ((index+1)*100)/total;
+    char[] chars = new char[percentage/5];
+    Arrays.fill(chars, '#');
+    String percentageString = new String(chars);
+    
+    System.out.printf("Processing - [%-20s]%3d%%\r", percentageString, percentage);
   }
 }
 
