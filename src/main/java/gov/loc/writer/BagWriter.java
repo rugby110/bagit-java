@@ -41,7 +41,7 @@ public class BagWriter {
     writeBagit(dotBagDir, bag.getVersion());
     writeBagInfo(dotBagDir, bag.getBagInfo());
     writeFileManifest(dotBagDir, bag.getFileManifest(), bag.getHashAlgorithm());
-    writeTagManifest(dotBagDir, bag.getHashAlgorithm()); // TODO fix me
+    writeTagManifest(dotBagDir, bag.getHashAlgorithm());
 
     return true;
   }
@@ -75,8 +75,7 @@ public class BagWriter {
     writeManifest(dotBagDir, manifestFileName, manifest);
   }
 
-  protected static void writeTagManifest(File dotBagDir, String algorithm)
-      throws IOException, NoSuchAlgorithmException {
+  protected static void writeTagManifest(File dotBagDir, String algorithm) throws IOException, NoSuchAlgorithmException {
     Map<String, String> manifest = new HashMap<>();
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
 

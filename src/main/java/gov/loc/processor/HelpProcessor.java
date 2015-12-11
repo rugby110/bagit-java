@@ -21,25 +21,28 @@ public class HelpProcessor{
     }
     
     switch(args[0]){
+      case "add":
+        printAddHelp();
+      break;
       case "create":
         printCreateHelp();
         break;
-      case "verify":
-        printVerifyHelp();
+      case "convert":
+        printConvertHelp();
         break;
-      case "add":
-        printAddHelp();
-        break;
-      case "remove":
-      case "rm":
-        printRemoveHelp();
+      case "help":
+        printHelpHelp();
         break;
       case "list":
       case "ls":
         printListHelp();
         break;
-      case "help":
-        printHelpHelp();
+      case "remove":
+      case "rm":
+        printRemoveHelp();
+        break;
+      case "verify":
+        printVerifyHelp();
         break;
       default:
         throw new ArgumentException("Unrecognized command " + args[0]);
@@ -101,15 +104,23 @@ public class HelpProcessor{
     logger.info(helpUsage);
   }
   
+  protected static void printConvertHelp(){
+    String helpUsage = "Usage: bagit convert\n"
+        +              "  Convert old versions of bagit bags into the new .bag folder stucture\n"
+        +              "  Available versions to convert are 0.93, 0.94, 0.95, 0.96, and 0.97";
+    logger.info(helpUsage);
+  }
+  
   public static void printUsage(){
     String usage = "Usage: bagit <COMMAND> [ARGS]\n"
         +          "       Where <COMMAND> is any of the below commands and [ARGS] are option arguments for those commands.\n"
-        +          "         <create> [--include --exclude] - create a bag\n"
-        +          "         <verify> [--all --files --tags] - verify the files/tags match their hash.\n"
         +          "         <add> [--files --info] - add files/info to bag.\n"
-        +          "         <remove | rm> [--files --info] - remove files/info from bag.\n"
+        +          "         <convert> - convert version 0.93-0.97 into 1.0\n"
+        +          "         <create> [--include --exclude] - create a bag\n"
+        +          "         <help> <COMMAND> - show more details for any of the commands.\n"
         +          "         <list | ls> [--files --info --missing] - list files/tags in bag. Also can list files not in bag.\n"
-        +          "         <help> <COMMAND> - show more details for any of the commands.";
+        +          "         <remove | rm> [--files --info] - remove files/info from bag.\n"
+        +          "         <verify> [--all --files --tags] - verify the files/tags match their hash.";
     
     logger.info(usage);
   }

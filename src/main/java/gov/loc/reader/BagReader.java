@@ -149,12 +149,4 @@ public class BagReader {
 
     return keyValueMap;
   }
-
-  /**
-   * Converts old versions of bagit spec to {@link Bag}
-   */
-  public static Bag convertBag(File directory) throws Exception {
-    // TODO
-    throw new Exception("Not yet implemented!");
-  }
 }
