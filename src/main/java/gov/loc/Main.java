@@ -28,7 +28,7 @@ public class Main {
     try {
       doCommand(args[0], commandArgs);
     } catch (Exception e) {
-      logger.error(e.getMessage());
+      logger.error("Error! {}", e.toString());
     }
   }
 

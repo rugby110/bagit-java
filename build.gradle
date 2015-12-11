@@ -84,3 +84,8 @@ findbugsTest.enabled = false
 pmd {
   ruleSets = ["java-basic", "java-braces"]
 }
+
+//when not building an offical release (i.e. versioned) add debug info for easy debugging
+if(project.version == "unspecified"){
+  applicationDefaultJvmArgs += ["-Xdebug", "-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n"]
+}

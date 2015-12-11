@@ -50,16 +50,12 @@ public class ConvertProcessor extends BagReader{
   }
   
   protected static void moveFilesOutOfDataDir(final File currentDir) throws IOException{
-    Files.walkFileTree(Paths.get(currentDir.toURI()), new SimpleFileVisitor<Path>(){
-      @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-           if(!attrs.isDirectory()){
-             Path target = Paths.get(currentDir.getPath(), file.toFile().getName());
-             Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
-           }
-           return FileVisitResult.CONTINUE;
-       }
-    });
+    File dataDir = new File(currentDir, "data");
+    
+    for(File file : dataDir.listFiles()){
+      Path target = Paths.get(currentDir.getPath(), file.getName());
+      Files.move(Paths.get(file.toURI()), target, StandardCopyOption.REPLACE_EXISTING);
+    }
   }
   
   protected static Bag createNewBag(File currentDir) throws IOException, NoSuchAlgorithmException{
