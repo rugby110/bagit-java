@@ -85,7 +85,10 @@ pmd {
   ruleSets = ["java-basic", "java-braces"]
 }
 
-//when not building an offical release (i.e. versioned) add debug info for easy debugging
+//uncomment for easy debugging
+//applicationDefaultJvmArgs += ["-Xdebug", "-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n"]
+
+//so that there is always a version specified
 if(project.version == "unspecified"){
-  applicationDefaultJvmArgs += ["-Xdebug", "-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n"]
+  project.version="5.0.0-DEV"
 }

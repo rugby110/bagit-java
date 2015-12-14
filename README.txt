@@ -8,7 +8,7 @@ manipulation, and validation of bags.  It is version aware.  The earliest
 supported version is 0.93.
 
 REQUIREMENTS:
-Java 6
+Java 7
 
 BUILD:
 Inside the bagit-java root directory(hence referred to as <ROOT_DIR>), run 'gradle distZip'. This will create one .zip file,
@@ -244,5 +244,5 @@ Changes in 2.1:
 6. Added version-aware handling of filepath delimiters. 
 
 
-For questions or problems, please post to the loc-xferutils mailing list at https://lists.sourceforge.net/lists/listinfo/loc-xferutils-mail.
-For further assistance, contact Salim Malik (smalik@loc.gov).
+For questions or problems, please post an issue to the github repository https://github.com/LibraryOfCongress/bagit-java
+For further assistance, contact the developer list (REPO-DEV@LISTSERV.LOC.GOV).
