@@ -51,10 +51,12 @@ public class ConvertProcessor extends BagReader{
   
   protected static void moveFilesOutOfDataDir(final File currentDir) throws IOException{
     File dataDir = new File(currentDir, "data");
-    
-    for(File file : dataDir.listFiles()){
-      Path target = Paths.get(currentDir.getPath(), file.getName());
-      Files.move(Paths.get(file.toURI()), target, StandardCopyOption.REPLACE_EXISTING);
+    File[] files = dataDir.listFiles();
+    if(files != null){
+      for(File file : files){
+        Path target = Paths.get(currentDir.getPath(), file.getName());
+        Files.move(Paths.get(file.toURI()), target, StandardCopyOption.REPLACE_EXISTING);
+      }
     }
   }
   
