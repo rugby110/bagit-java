@@ -14,6 +14,7 @@ import java.util.List;
 import gov.loc.domain.Bag;
 import gov.loc.error.ArgumentException;
 import gov.loc.factory.BagFactory;
+import gov.loc.structure.StructureConstants;
 import gov.loc.writer.BagWriter;
 
 /**
@@ -53,7 +54,8 @@ public class CreateProcessor {
     Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>(){
       @Override
       public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-           if(!attrs.isDirectory() && file.toString().matches(includeRegex)){
+           if(!attrs.isDirectory() && file.toString().matches(includeRegex) &&
+               !file.toString().contains(StructureConstants.DOT_BAG_FOLDER_NAME)){
              pathsIncluded.add(file);
            }
            return FileVisitResult.CONTINUE;
@@ -71,7 +73,8 @@ public class CreateProcessor {
     Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>(){
       @Override
       public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-           if(!attrs.isDirectory() && !file.toString().matches(excludeRegex)){
+           if(!attrs.isDirectory() && !file.toString().matches(excludeRegex) &&
+               !file.toString().contains(StructureConstants.DOT_BAG_FOLDER_NAME)){
              pathsIncluded.add(file);
            }
            return FileVisitResult.CONTINUE;
