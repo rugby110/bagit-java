@@ -43,8 +43,7 @@ public class ConvertProcessor extends BagReader{
   }
   
   protected static void checkVersionIsAbleToBeConverted(String version){
-    if(!(version.contains("0.97") || version.contains("0.96") || version.contains("0.95") || 
-        version.contains("0.94") || version.contains("0.93"))){
+    if(!version.matches("\\W*0\\.9[3-7]")){
       throw new UnsupportedConvertionException("Version " + version + " is currently not supported for converting.");
     }
   }

@@ -24,7 +24,7 @@ public class ConvertProcessorTest extends Assert {
   public TemporaryFolder folder= new TemporaryFolder();
   
   @Test
-  public void testConvertVersion97() throws Exception{
+  public void testConvertVersions() throws Exception{
     List<String> versionsToTest = Arrays.asList("v0_93","v0_94","v0_95","v0_96","v0_97");
     for(String versionToTest : versionsToTest){
       URL url = this.getClass().getClassLoader().getResource("bags/" + versionToTest + "/bag");
