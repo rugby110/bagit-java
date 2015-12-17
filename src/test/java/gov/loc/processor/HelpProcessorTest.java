@@ -23,6 +23,11 @@ public class HelpProcessorTest extends Assert {
   }
   
   @Test
+  public void testHelpWithConvert(){
+    HelpProcessor.help(new String[]{"convert"});
+  }
+  
+  @Test
   public void testHelpWithCreate(){
     HelpProcessor.help(new String[]{"create"});
   }
