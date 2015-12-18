@@ -17,6 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import gov.loc.error.UnsupportedConvertionException;
 import gov.loc.structure.StructureConstants;
 
 public class ConvertProcessorTest extends Assert {
@@ -38,6 +39,19 @@ public class ConvertProcessorTest extends Assert {
       File dotBagDir = Paths.get(target.toString(), StructureConstants.DOT_BAG_FOLDER_NAME).toFile();
       assertTrue(dotBagDir.exists());
     }
+  }
+  
+  @Test(expected=UnsupportedConvertionException.class)
+  public void testConvertUnsupportedVersion() throws Exception{
+    String versionToTest = "someOtherVersion";
+    URL url = this.getClass().getClassLoader().getResource("bags/" + versionToTest + "/bag");
+    Path source = Paths.get(url.toURI());
+    Path target = Paths.get(folder.getRoot().getPath(), versionToTest);
+    createTestFilesAndFolders(source, target);
+    
+    System.setProperty("user.dir", target.toString());
+    
+    ConvertProcessor.convert(new String[]{});
   }
   
   private void createTestFilesAndFolders(final Path starting, final Path ending) throws Exception{
