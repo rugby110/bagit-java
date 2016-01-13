@@ -50,6 +50,10 @@ tasks.withType(Test) {
   reports.html.destination = file("${reporting.baseDir}/${name}")
 }
 
+jacoco {
+  toolVersion = "0.7.5.201505241946"
+}
+
 findbugsMain{
   reports{
     xml.enabled = false
