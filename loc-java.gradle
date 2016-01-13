@@ -1,0 +1,108 @@
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'findbugs'
+apply plugin: 'pmd'
+apply plugin: 'eclipse'
+
+repositories {
+  jcenter()
+}
+
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/java')
+        }
+//        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+task dump(type: Copy){
+  description "Copies this project's dependencies to ${project.buildDir}/dumpedDependencies directory."
+  from configurations.runtime
+  into "${project.buildDir}/dumpedDependencies"
+}
+
+task integrationTest(type: Test) {
+  description "Runs the integration tests."
+  testClassesDir = sourceSets.integrationTest.output.classesDir
+  classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+jacocoTestReport.dependsOn test
+build.dependsOn jacocoTestReport
+
+test { //show test output
+    testLogging.showStandardStreams = true
+}
+
+tasks.withType(Test) {
+//write unit and integration test reports to different directories
+  reports.html.destination = file("${reporting.baseDir}/${name}")
+}
+
+findbugsMain{
+  reports{
+    xml.enabled = false
+    html.enabled = true //we only care about the html since task will fail in jenkins if gradle reports a problem
+  }
+}
+
+//not enabled because sometimes you need to do bad practices in tests
+findbugsIntegrationTest.enabled = false
+findbugsTest.enabled = false 
+
+pmd {
+  ruleSets = ["java-basic", "java-braces"]
+}
+
+eclipse.classpath.file.withXml { xml ->
+  def node = xml.asNode()
+
+  //make resources lib instead of src kind
+  Node resources = node.find {it.@path == "src/main/resources"}
+  if(resources != null){
+    resources.attributes().put("kind", "lib")
+    resources.attributes().put("exported", "true")
+  }
+  resources = node.find {it.@path == "src/test/resources"}
+  if(resources != null){
+    resources.attributes().put("kind", "lib")
+    resources.attributes().put("exported", "false")
+  }
+}
+
+eclipse.project.file.withXml { provider ->
+  ignoreDerivedResources(provider.asNode())
+}
+
+def ignoreDerivedResources(projectDescription, directories = ["build", "target"]) {
+  def count = directories.count { file(it).exists() }
+  if (count > 0) {
+    def filter = projectDescription
+      .appendNode("filteredResources")
+      .appendNode("filter")
+    filter.appendNode("id", System.currentTimeMillis().toString().trim())
+    filter.appendNode("type", "26")
+    filter.appendNode("name")
+    def matcher = filter.appendNode("matcher")
+    matcher.appendNode("id", "org.eclipse.ui.ide.orFilterMatcher")
+    def arguments = matcher.appendNode("arguments")
+    directories.each {
+      if (file(it).exists()) {
+        def dirMatcher = arguments.appendNode("matcher")
+        dirMatcher.appendNode("id", "org.eclipse.ui.ide.multiFilter")
+        dirMatcher.appendNode("arguments", "1.0-projectRelativePath-matches-false-false-${it}")
+      }
+    }
+  }
+}
