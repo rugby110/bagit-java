@@ -1,23 +1,26 @@
 package gov.loc.writer;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
 
 import gov.loc.domain.Bag;
+import gov.loc.domain.Version;
 import gov.loc.hash.Hasher;
 import gov.loc.structure.StructureConstants;
 
@@ -36,77 +39,94 @@ public class BagWriter {
    * @throws NoSuchAlgorithmException
    */
   public static boolean write(Bag bag) throws IOException, NoSuchAlgorithmException {
-    File dotBagDir = createDotBagDirectory(bag.getRootDir());
+    Path dotBagDir = createDotBagDirectory(bag.getRootDir());
 
     writeBagit(dotBagDir, bag.getVersion());
-    writeBagInfo(dotBagDir, bag.getBagInfo());
+    
+    Path bagInfoFile = dotBagDir.resolve(StructureConstants.BAG_INFO_YAML_FILE_NAME);
+    if(bag.getBagInfo().size() > 0 || Files.exists(bagInfoFile)){
+      writeBagInfo(dotBagDir, bag.getBagInfo());
+    }
+    
     writeFileManifest(dotBagDir, bag.getFileManifest(), bag.getHashAlgorithm());
-    writeTagManifest(dotBagDir, bag.getHashAlgorithm());
+    if(bag.getTagManifest().size() > 0){
+      writeTagManifest(dotBagDir, bag.getHashAlgorithm());
+    }
 
     return true;
   }
 
-  protected static File createDotBagDirectory(File rootDir) {
-    File dotBagDir = new File(rootDir, StructureConstants.DOT_BAG_FOLDER_NAME);
-    boolean successful = dotBagDir.mkdir();
-    logger.debug("Was able to create {}? {}", dotBagDir, successful);
+  protected static Path createDotBagDirectory(Path rootDir) throws IOException {
+    Path dotBagDir = rootDir.resolve(StructureConstants.DOT_BAG_FOLDER_NAME);
+    Files.createDirectories(dotBagDir);
+    logger.debug("Was able to create {}? {}", dotBagDir, Files.exists(dotBagDir));
 
     return dotBagDir;
   }
 
-  protected static void writeBagit(File dotBagDir, String version) throws IOException {
+  protected static void writeBagit(Path dotBagDir, Version version) throws IOException {
     StringBuilder line = new StringBuilder();
-    line.append("BagIt-Version").append(':').append(version);
-    File bagitFile = new File(dotBagDir, StructureConstants.BAGIT_FILE_NAME);
+    line.append("BagIt-Version").append(':').append(version.toString());
+    Path bagitFile = dotBagDir.resolve(StructureConstants.BAGIT_FILE_NAME);
 
-    Files.write(Paths.get(bagitFile.toURI()), line.toString().getBytes(StandardCharsets.UTF_8),
+    Files.write(bagitFile, line.toString().getBytes(StandardCharsets.UTF_8),
         StandardOpenOption.CREATE, StandardOpenOption.APPEND);
   }
 
-  protected static void writeBagInfo(File dotBagDir, Map<String, String> bagInfo) throws IOException {
-    File bagInfoFile = new File(dotBagDir, StructureConstants.BAG_INFO_FILE_NAME);
-    writeMapToFile(bagInfoFile, bagInfo, ':');
+  protected static void writeBagInfo(Path dotBagDir, Map<String, List<String>> bagInfo) throws IOException {
+    Path bagInfoFile = dotBagDir.resolve(StructureConstants.BAG_INFO_YAML_FILE_NAME);
+    if (Files.exists(bagInfoFile)) {
+      Files.delete(bagInfoFile);
+      logger.debug("Deletion of file {} was successful? {}", bagInfoFile, Files.exists(bagInfoFile));
+    }
+
+    try (BufferedWriter writer = Files.newBufferedWriter(bagInfoFile, StandardCharsets.UTF_8,
+        StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+      Yaml yaml = new Yaml();
+      yaml.dump(bagInfo, writer);
+    }
   }
 
-  protected static void writeFileManifest(File dotBagDir, Map<String, String> manifest, String algorithm)
+  protected static void writeFileManifest(Path dotBagDir, Map<String, String> manifest, String algorithm)
       throws IOException {
     String manifestFileName = StructureConstants.FILE_MANIFEST_FILE_NAME_PREFIX + algorithm
         + StructureConstants.FILE_MANIFEST_FILE_NAME_SUFFIX;
     writeManifest(dotBagDir, manifestFileName, manifest);
   }
 
-  protected static void writeTagManifest(File dotBagDir, String algorithm) throws IOException, NoSuchAlgorithmException {
+  protected static void writeTagManifest(Path dotBagDir, String algorithm)
+      throws IOException, NoSuchAlgorithmException {
     Map<String, String> manifest = new HashMap<>();
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
-
-    File[] filenames = dotBagDir.listFiles();
-    if (filenames != null) {
-      for (File file : filenames) {
-        InputStream inputStream = Files.newInputStream(Paths.get(file.toURI()), StandardOpenOption.READ);
-        String hash = Hasher.hash(inputStream, messageDigest);
-        manifest.put(hash, file.getName());
-      }
-    }
 
     String manifestFileName = StructureConstants.TAG_MANIFEST_FILE_NAME_PREFIX + algorithm
         + StructureConstants.TAG_MANIFEST_FILE_NAME_SUFFIX;
 
+    DirectoryStream<Path> stream = Files.newDirectoryStream(dotBagDir);
+    for (Path file : stream) {
+      if (!file.getFileName().endsWith(manifestFileName)) {
+        InputStream inputStream = Files.newInputStream(file, StandardOpenOption.READ);
+        String hash = Hasher.hash(inputStream, messageDigest);
+        manifest.put(hash, file.getFileName().toString());
+      }
+    }
+
     writeManifest(dotBagDir, manifestFileName, manifest);
   }
 
-  protected static void writeManifest(File dotBagDir, String manifestFileName, Map<String, String> manifest)
+  protected static void writeManifest(Path dotBagDir, String manifestFileName, Map<String, String> manifest)
       throws IOException {
-    File manifestFile = new File(dotBagDir, manifestFileName);
+    Path manifestFile = dotBagDir.resolve(manifestFileName);
     writeMapToFile(manifestFile, manifest, ' ');
   }
 
-  protected static void writeMapToFile(File output, Map<String, String> map, char delimiter) throws IOException {
-    if (output.exists()) {
-      boolean successful = output.delete();
-      logger.debug("Deletion of file {} was successful? {}", output, successful);
+  protected static void writeMapToFile(Path output, Map<String, String> map, char delimiter) throws IOException {
+    if (Files.exists(output)) {
+      Files.delete(output);
+      logger.debug("Deletion of file {} was successful? {}", output, Files.exists(output));
     }
 
-    try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(output.toURI()), StandardCharsets.UTF_8,
+    try (BufferedWriter writer = Files.newBufferedWriter(output, StandardCharsets.UTF_8,
         StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
       for (Entry<String, String> entry : map.entrySet()) {
         StringBuilder line = new StringBuilder();

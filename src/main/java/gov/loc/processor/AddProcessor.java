@@ -1,6 +1,5 @@
 package gov.loc.processor;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -11,6 +10,8 @@ import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +36,9 @@ public class AddProcessor {
       throw new ArgumentException("The 'add' command requires at least one argument! Run 'bagit help add' for details.");
     }
     
-    File currentDir = new File(System.getProperty("user.dir"));
-    File dotBagDir = new File(currentDir, StructureConstants.DOT_BAG_FOLDER_NAME);
-    if (!dotBagDir.exists() || !dotBagDir.isDirectory()) {
+    Path currentDir = Paths.get(System.getProperty("user.dir"));
+    Path dotBagDir = currentDir.resolve(StructureConstants.DOT_BAG_FOLDER_NAME);
+    if (!Files.exists(dotBagDir) || !Files.isDirectory(dotBagDir)) {
       throw new NonexistentBagException("Can not add files, directories, or info to nonexistent bag! Please create a bag first.");
     }
 
@@ -59,9 +60,9 @@ public class AddProcessor {
     MessageDigest messageDigest = MessageDigest.getInstance(bag.getHashAlgorithm());
     
     for (int index = 1; index < args.length; index++) {
-      File currentFile = new File(bag.getRootDir(), args[index]);
-      if (currentFile.exists()) {
-        if (currentFile.isDirectory()) {
+      Path currentFile = bag.getRootDir().resolve(args[index]);
+      if (Files.exists(currentFile)) {
+        if (Files.isDirectory(currentFile)) {
           addDirectoryToBag(bag, messageDigest, currentFile);
         } else {
           addFileToBag(bag, currentFile, messageDigest);
@@ -74,24 +75,21 @@ public class AddProcessor {
     BagWriter.write(bag);
   }
   
-  protected static void addDirectoryToBag(final Bag bag, final MessageDigest messageDigest, File dir) throws IOException{
-    Files.walkFileTree(Paths.get(dir.toURI()), new SimpleFileVisitor<Path>(){
+  protected static void addDirectoryToBag(final Bag bag, final MessageDigest messageDigest, Path dir) throws IOException{
+    Files.walkFileTree(dir, new SimpleFileVisitor<Path>(){
       @Override
       public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
            if(!attrs.isDirectory()){
-             addFileToBag(bag, file.toFile(), messageDigest);
+             addFileToBag(bag, file, messageDigest);
            }
            return FileVisitResult.CONTINUE;
        }
     });
   }
 
-  protected static void addFileToBag(Bag bag, File file, MessageDigest messageDigest) throws IOException {
-    Path rootDirPath = Paths.get(bag.getRootDir().toURI());
-    Path fileToAddPath = Paths.get(file.toURI());
-
-    String hash = Hasher.hash(Files.newInputStream(fileToAddPath, StandardOpenOption.READ), messageDigest);
-    String filePath = fileToAddPath.relativize(rootDirPath).toString();
+  protected static void addFileToBag(Bag bag, Path file, MessageDigest messageDigest) throws IOException {
+    String hash = Hasher.hash(Files.newInputStream(file, StandardOpenOption.READ), messageDigest);
+    String filePath = file.relativize(bag.getRootDir()).toString();
     bag.getFileManifest().put(hash, filePath);
   }
 
@@ -102,7 +100,14 @@ public class AddProcessor {
         throw new ArgumentException("argument " + args[index] + " does not conform to the pattern <KEY>=<VALUE>!");
       }
       
-      bag.getBagInfo().put(parts[0], parts[1]);
+      if(bag.getBagInfo().get(parts[0]) != null){
+        bag.getBagInfo().get(parts[0]).add(parts[1]);
+      }
+      else{
+        List<String> values = new ArrayList<>();
+        values.add(parts[1]);
+        bag.getBagInfo().put(parts[0], values);
+      }
     }
     
     BagWriter.write(bag);

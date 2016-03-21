@@ -1,2 +1,2 @@
-BagIt-Version: someOtherVersion
+BagIt-Version: 9999.9999
 Tag-File-Character-Encoding: UTF-8

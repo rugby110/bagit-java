@@ -27,9 +27,9 @@ import gov.loc.writer.BagWriter;
  */
 public class RemoveProcessor {
   public static void remove(String[] args) throws InvalidBagStructureException, IOException, NoSuchAlgorithmException {
-    File currentDir = new File(System.getProperty("user.dir"));
-    File dotBagDir = new File(currentDir, StructureConstants.DOT_BAG_FOLDER_NAME);
-    if (!dotBagDir.exists() || !dotBagDir.isDirectory()) {
+    Path currentDir = Paths.get(System.getProperty("user.dir"));
+    Path dotBagDir = currentDir.resolve(StructureConstants.DOT_BAG_FOLDER_NAME);
+    if (!Files.exists(dotBagDir) || !Files.isDirectory(dotBagDir)) {
       throw new NonexistentBagException("Can not remove files, directories, or info to nonexistent bag! Please create a bag first.");
     }
 
@@ -50,8 +50,7 @@ public class RemoveProcessor {
   }
   
   protected static void removeFiles(String[] args, Bag bag) throws IOException{
-    final Path rootDir = Paths.get(bag.getRootDir().toURI());
-    Set<String> fileNames = getFilenames(args, rootDir);
+    Set<String> fileNames = getFilenames(args, bag.getRootDir());
     
     //doing it this way to avoid concurrent modification exception
     Iterator<Entry<String, String>> iterator = bag.getFileManifest().entrySet().iterator();

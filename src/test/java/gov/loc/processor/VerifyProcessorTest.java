@@ -13,7 +13,7 @@ public class VerifyProcessorTest extends Assert {
 
   @Before
   public void setup() throws Exception{
-    File bagFile = new File(this.getClass().getClassLoader().getResource("bags/v1_0/incomplete").toURI());
+    File bagFile = new File(this.getClass().getClassLoader().getResource("bags/v0_98/incomplete").toURI());
     System.setProperty("user.dir", bagFile.toString());
   }
   

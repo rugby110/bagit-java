@@ -42,7 +42,7 @@ public class Main {
       CreateProcessor.create(commandArgs);
       break;
     case "convert":
-      ConvertProcessor.convert(commandArgs);
+      ConvertProcessor.convert();
       break;
     case "help":
       HelpProcessor.help(commandArgs);

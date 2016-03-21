@@ -1,7 +1,8 @@
 package gov.loc.readerwriter;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -18,11 +19,12 @@ public class BagReaderWriterTest extends Assert {
   
   @Test
   public void testReaderWriter() throws Exception{
-    URL url = this.getClass().getClassLoader().getResource("bags/v1_0/complete");
-    Bag bag = BagReader.createBag(new File(url.toURI()));
-    bag.setRootDir(folder.getRoot());
+    URL url = this.getClass().getClassLoader().getResource("bags/v0_98/complete");
+    Bag bag = BagReader.createBag(Paths.get(url.toURI()));
+    Path root = Paths.get(folder.getRoot().toURI());
+    bag.setRootDir(root);
     BagWriter.write(bag);
-    Bag createdBag = BagReader.createBag(folder.getRoot());
+    Bag createdBag = BagReader.createBag(root);
     assertEquals(bag, createdBag);
   }
 }

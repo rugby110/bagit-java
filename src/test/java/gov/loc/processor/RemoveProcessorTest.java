@@ -27,7 +27,7 @@ public class RemoveProcessorTest extends Assert {
   
   @Before
   public void setup() throws Exception{
-    URL url = this.getClass().getClassLoader().getResource("bags/v1_0/incomplete");
+    URL url = this.getClass().getClassLoader().getResource("bags/v0_98/incomplete");
     final Path starting = Paths.get(url.toURI());
     final Path ending = Paths.get(folder.getRoot().toURI());
     
@@ -71,12 +71,12 @@ public class RemoveProcessorTest extends Assert {
   
   @Test
   public void testRemoveInfo() throws Exception{
-    String lineToBeRemoved = "foo:bar";
+    String lineToBeRemoved = "- foo : bar";
 
     RemoveProcessor.remove(new String[]{"--info", "foo"});
     
     File manifestFile = new File(folder.getRoot(), 
-        StructureConstants.DOT_BAG_FOLDER_NAME + File.separator + StructureConstants.BAG_INFO_FILE_NAME);
+        StructureConstants.DOT_BAG_FOLDER_NAME + File.separator + StructureConstants.BAG_INFO_YAML_FILE_NAME);
     List<String> lines = Files.readAllLines(Paths.get(manifestFile.toURI()));
     assertFalse(lines.contains(lineToBeRemoved));
   }

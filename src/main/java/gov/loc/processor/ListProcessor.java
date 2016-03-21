@@ -1,6 +1,5 @@
 package gov.loc.processor;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -9,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -28,9 +28,9 @@ public class ListProcessor {
   private static final Logger logger = LoggerFactory.getLogger(ListProcessor.class);
 
   public static void list(String[] args) throws InvalidBagStructureException, IOException {
-    File currentDir = new File(System.getProperty("user.dir"));
-    File dotBagDir = new File(currentDir, StructureConstants.DOT_BAG_FOLDER_NAME);
-    if (!dotBagDir.exists() || !dotBagDir.isDirectory()) {
+    Path currentDir = Paths.get(System.getProperty("user.dir"));
+    Path dotBagDir = currentDir.resolve(StructureConstants.DOT_BAG_FOLDER_NAME);
+    if (!Files.exists(dotBagDir) || !Files.isDirectory(dotBagDir)) {
       throw new NonexistentBagException("Not currently in a bagged directory! Please create a bag first.");
     }
     
@@ -65,20 +65,19 @@ public class ListProcessor {
   
   protected static void listInfo(Bag bag){
     logger.info("Bag information:");
-    for(Entry<String,String> entry : bag.getBagInfo().entrySet()){
+    for(Entry<String,List<String>> entry : bag.getBagInfo().entrySet()){
       logger.info("  {}:{}", entry.getKey(), entry.getValue());
     }
   }
   
-  protected static void listMissing(Bag bag) throws IOException{
+  protected static void listMissing(final Bag bag) throws IOException{
     logger.info("Missing files:");
     final Collection<String> files = bag.getFileManifest().values();
-    final Path rootDir = Paths.get(bag.getRootDir().toURI());
 
-    Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>(){
+    Files.walkFileTree(bag.getRootDir(), new SimpleFileVisitor<Path>(){
       @Override
       public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        String relativePath = rootDir.relativize(file).toString();
+        String relativePath = bag.getRootDir().relativize(file).toString();
         if(!attrs.isDirectory() && !files.contains(relativePath) && !relativePath.startsWith(StructureConstants.DOT_BAG_FOLDER_NAME)){
            logger.info("  {}", relativePath);
         }

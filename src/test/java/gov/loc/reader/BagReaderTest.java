@@ -1,31 +1,34 @@
 package gov.loc.reader;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import gov.loc.domain.Bag;
+import gov.loc.domain.Version;
 
 public class BagReaderTest extends Assert {
   
   @Test
   public void testRead() throws Exception{
-    URL url = this.getClass().getClassLoader().getResource("bags/v1_0/complete");
-    File directory = new File(url.toURI());
+    URL url = this.getClass().getClassLoader().getResource("bags/v0_98/complete");
+    Path directory = Paths.get(url.toURI());
     
     Bag expectedBag = new Bag();
     expectedBag.setHashAlgorithm("sha1");
     expectedBag.setRootDir(directory);
-    expectedBag.setVersion("1.0");
-    expectedBag.setBagInfo(new HashMap<String,String>());
+    expectedBag.setVersion(new Version(0, 98));
+    expectedBag.setBagInfo(new HashMap<String,List<String>>());
     
     Map<String,String> tagManifest = new HashMap<>();
     tagManifest.put("bc91bfa1ed344269a304bb491dc52db8d6832513", "bagit.txt");
-    tagManifest.put("da39a3ee5e6b4b0d3255bfef95601890afd80709", "bag-info.txt");
+    tagManifest.put("da39a3ee5e6b4b0d3255bfef95601890afd80709", "bag-info.yml");
     tagManifest.put("16d33c58b2d14d4de32ab9d2b4d3a6736ff72728", "manifest-sha1.txt");
     expectedBag.setTagManifest(tagManifest);
     

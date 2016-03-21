@@ -13,13 +13,14 @@ import java.util.List;
 import java.util.Map;
 
 import gov.loc.domain.Bag;
+import gov.loc.domain.Version;
 import gov.loc.hash.Hasher;
 
 /**
  * Handy factory methods for creating {@link Bag}
  */
 public class BagFactory {
-  private static final String BAG_VERSION = "1.0";
+  private static final Version BAG_VERSION = new Version(0, 98);
   
   /**
    *  creates a {@link Bag} from all the files using @param algorithm </br>
@@ -29,16 +30,13 @@ public class BagFactory {
    */
   public static Bag createBag(Path rootDir, List<Path> files, String algorithm) throws IOException, NoSuchAlgorithmException{
     Bag bag = new Bag();
-    bag.setRootDir(rootDir.toFile());
+    bag.setRootDir(rootDir);
     bag.setVersion(BAG_VERSION);
     bag.setHashAlgorithm(algorithm);
     
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
     Map<String, String> hashToFilenameMap = hashFiles(files, messageDigest, rootDir);
     bag.setFileManifest(hashToFilenameMap);
-    
-    bag.setBagInfo(new HashMap<String,String>());
-    bag.setTagManifest(new HashMap<String, String>());
     
     return bag;
   }

@@ -14,7 +14,7 @@ public class ListProcessorTest extends Assert {
   
   @Before
   public void setup() throws Exception{
-    URL url = this.getClass().getClassLoader().getResource("bags/v1_0/incomplete");
+    URL url = this.getClass().getClassLoader().getResource("bags/v0_98/incomplete");
     File directory = new File(url.toURI());
     
     System.setProperty("user.dir", directory.toString());

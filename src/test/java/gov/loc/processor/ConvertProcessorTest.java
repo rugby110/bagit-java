@@ -35,7 +35,7 @@ public class ConvertProcessorTest extends Assert {
       
       System.setProperty("user.dir", target.toString());
       
-      ConvertProcessor.convert(new String[]{});
+      ConvertProcessor.convert();
       File dotBagDir = Paths.get(target.toString(), StructureConstants.DOT_BAG_FOLDER_NAME).toFile();
       assertTrue(dotBagDir.exists());
     }
@@ -51,7 +51,7 @@ public class ConvertProcessorTest extends Assert {
     
     System.setProperty("user.dir", target.toString());
     
-    ConvertProcessor.convert(new String[]{});
+    ConvertProcessor.convert();
   }
   
   private void createTestFilesAndFolders(final Path starting, final Path ending) throws Exception{

@@ -72,8 +72,6 @@ public class CreateProcessorTest extends Assert {
     assertTrue(dotBagDir.exists());
     File manifestFile = new File(dotBagDir, "manifest-sha1.txt");
     assertTrue(manifestFile.exists());
-    File tagManifestFile = new File(dotBagDir, "tagmanifest-sha1.txt");
-    assertTrue(tagManifestFile.exists());
     File bagitFile = new File(dotBagDir, StructureConstants.BAGIT_FILE_NAME);
     assertTrue(bagitFile.exists());
   }

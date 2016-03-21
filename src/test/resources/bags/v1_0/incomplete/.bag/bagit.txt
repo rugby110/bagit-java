@@ -1,1 +1,0 @@
-BagIt-Version:1.0

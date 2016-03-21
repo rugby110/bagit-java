@@ -1,6 +1,9 @@
 package gov.loc.domain;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -8,13 +11,13 @@ import java.util.Objects;
  * Contains all information regarding the bag, such as baginfo, file and tag manifests, etc. 
  */
 public class Bag {
-  private String version;
+  private Version version;
   //the root of the bag directory. i.e. the parent of .bag
-  private File rootDir;
+  private Path rootDir;
   private String hashAlgorithm;
-  private Map<String, String> bagInfo;
-  private Map<String, String> fileManifest;
-  private Map<String, String> tagManifest;
+  private LinkedHashMap<String, List<String>> bagInfo = new LinkedHashMap<>();
+  private Map<String, String> fileManifest = new HashMap<>();
+  private Map<String, String> tagManifest = new HashMap<>();
   
   @Override
   public int hashCode() {
@@ -35,16 +38,16 @@ public class Bag {
         Objects.equals(tagManifest, other.getTagManifest());
   }
   
-  public String getVersion() {
+  public Version getVersion() {
     return version;
   }
-  public void setVersion(String version) {
+  public void setVersion(Version version) {
     this.version = version;
   }
-  public File getRootDir() {
+  public Path getRootDir() {
     return rootDir;
   }
-  public void setRootDir(File rootDir) {
+  public void setRootDir(Path rootDir) {
     this.rootDir = rootDir;
   }
   public String getHashAlgorithm() {
@@ -53,11 +56,11 @@ public class Bag {
   public void setHashAlgorithm(String hashAlgorithm) {
     this.hashAlgorithm = hashAlgorithm;
   }
-  public Map<String, String> getBagInfo() {
+  public LinkedHashMap<String, List<String>> getBagInfo() {
     return bagInfo;
   }
-  public void setBagInfo(Map<String, String> bagInfo) {
-    this.bagInfo = bagInfo;
+  public void setBagInfo(Map<String, List<String>> bagInfo) {
+    this.bagInfo = new LinkedHashMap<>(bagInfo);
   }
   public Map<String, String> getFileManifest() {
     return fileManifest;
@@ -70,5 +73,11 @@ public class Bag {
   }
   public void setTagManifest(Map<String, String> tagManifest) {
     this.tagManifest = tagManifest;
+  }
+
+  @Override
+  public String toString() {
+    return "Bag [version=" + version + ", rootDir=" + rootDir + ", hashAlgorithm=" + hashAlgorithm + ", bagInfo="
+        + bagInfo + ", fileManifest=" + fileManifest + ", tagManifest=" + tagManifest + "]";
   }
 }

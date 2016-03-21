@@ -1,9 +1,9 @@
 package gov.loc.processor;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
@@ -24,9 +24,9 @@ import gov.loc.structure.StructureConstants;
  */
 public class VerifyProcessor {
   public static void verify(String[] args) throws InvalidBagStructureException, IOException, NoSuchAlgorithmException, IntegrityException{
-    File currentDir = new File(System.getProperty("user.dir"));
-    File dotBagDir = new File(currentDir, StructureConstants.DOT_BAG_FOLDER_NAME);
-    if (!dotBagDir.exists() || !dotBagDir.isDirectory()) {
+    Path currentDir = Paths.get(System.getProperty("user.dir"));
+    Path dotBagDir = currentDir.resolve(StructureConstants.DOT_BAG_FOLDER_NAME);
+    if (!Files.exists(dotBagDir) || !Files.isDirectory(dotBagDir)) {
       throw new NonexistentBagException("Not currently in a bagged directory! Please create a bag first.");
     }
     
@@ -62,8 +62,8 @@ public class VerifyProcessor {
   
   protected static void verifyFiles(Bag bag) throws InvalidBagStructureException, IOException, NoSuchAlgorithmException, IntegrityException{
     for(Entry<String, String> entry : bag.getFileManifest().entrySet()){
-      File fileToCheck = new File(bag.getRootDir(), entry.getValue());
-      InputStream stream = Files.newInputStream(Paths.get(fileToCheck.toURI()), StandardOpenOption.READ);
+      Path fileToCheck = bag.getRootDir().resolve(entry.getValue());
+      InputStream stream = Files.newInputStream(fileToCheck, StandardOpenOption.READ);
       MessageDigest messageDigest = MessageDigest.getInstance(bag.getHashAlgorithm());
       
       String hash = Hasher.hash(stream, messageDigest);
@@ -75,11 +75,11 @@ public class VerifyProcessor {
   }
   
   protected static void verifyTags(Bag bag) throws InvalidBagStructureException, IOException, NoSuchAlgorithmException, IntegrityException{
-    File dotBagDir = new File(bag.getRootDir(), StructureConstants.DOT_BAG_FOLDER_NAME);
+    Path dotBagDir = bag.getRootDir().resolve(StructureConstants.DOT_BAG_FOLDER_NAME);
     
     for(Entry<String, String> entry : bag.getTagManifest().entrySet()){
-      File fileToCheck = new File(dotBagDir, entry.getValue());
-      InputStream stream = Files.newInputStream(Paths.get(fileToCheck.toURI()), StandardOpenOption.READ);
+      Path fileToCheck = dotBagDir.resolve(entry.getValue());
+      InputStream stream = Files.newInputStream(fileToCheck, StandardOpenOption.READ);
       MessageDigest messageDigest = MessageDigest.getInstance(bag.getHashAlgorithm());
       
       String hash = Hasher.hash(stream, messageDigest);

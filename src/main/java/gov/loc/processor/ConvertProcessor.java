@@ -1,7 +1,7 @@
 package gov.loc.processor;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,24 +12,32 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import gov.loc.domain.Bag;
+import gov.loc.domain.Version;
 import gov.loc.error.InvalidBagStructureException;
 import gov.loc.error.UnsupportedConvertionException;
 import gov.loc.factory.BagFactory;
 import gov.loc.reader.BagReader;
+import gov.loc.structure.StructureConstants;
 import gov.loc.writer.BagWriter;
 
 /**
  * Handles converting old bagit versions to the latest version.
  */
 public class ConvertProcessor extends BagReader{
+  private static Version VERSION_93 = new Version(0, 93);
+  private static Version VERSION_94 = new Version(0, 94);
+  private static Version VERSION_95 = new Version(0, 95);
+  private static Version VERSION_96 = new Version(0, 96);
+  private static Version VERSION_97 = new Version(0, 97);
   
-  public static void convert(String[] args) throws InvalidBagStructureException, IOException, NoSuchAlgorithmException {
-    File currentDir = new File(System.getProperty("user.dir"));
-    String version = getVersion(currentDir);
+  public static void convert() throws InvalidBagStructureException, IOException, NoSuchAlgorithmException {
+    Path currentDir = Paths.get(System.getProperty("user.dir"));
+    Version version = getVersion(currentDir);
     
     checkVersionIsAbleToBeConverted(version);
 
@@ -42,28 +50,25 @@ public class ConvertProcessor extends BagReader{
     BagWriter.write(bag);
   }
   
-  protected static void checkVersionIsAbleToBeConverted(String version){
-    if(!version.matches("\\W*0\\.9[3-7]")){
-      throw new UnsupportedConvertionException("Version " + version + " is currently not supported for converting.");
+  protected static void checkVersionIsAbleToBeConverted(Version version){
+    if(VERSION_97.compareTo(version) < 0){
+      throw new UnsupportedConvertionException("Version " + version.toString() + " is currently not supported for converting.");
     }
   }
   
-  protected static void moveFilesOutOfDataDir(final File currentDir) throws IOException{
-    File dataDir = new File(currentDir, "data");
-    File[] files = dataDir.listFiles();
-    if(files != null){
-      for(File file : files){
-        Path target = Paths.get(currentDir.getPath(), file.getName());
-        Files.move(Paths.get(file.toURI()), target, StandardCopyOption.REPLACE_EXISTING);
-      }
+  protected static void moveFilesOutOfDataDir(final Path currentDir) throws IOException{
+    Path dataDir = currentDir.resolve("data");
+    DirectoryStream<Path> stream = Files.newDirectoryStream(dataDir);
+    for(Path file : stream){
+      Path target = currentDir.resolve(file.getFileName());
+      Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
     }
   }
   
-  protected static Bag createNewBag(File currentDir) throws IOException, NoSuchAlgorithmException{
-    Path rootDir = Paths.get(currentDir.toURI());
+  protected static Bag createNewBag(Path currentDir) throws IOException, NoSuchAlgorithmException{
     final List<Path> pathsIncluded = new ArrayList<>();
     
-    Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>(){
+    Files.walkFileTree(currentDir, new SimpleFileVisitor<Path>(){
       @Override
       public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
            if(!attrs.isDirectory()){
@@ -73,33 +78,34 @@ public class ConvertProcessor extends BagReader{
        }
     });
     
-    Bag bag = BagFactory.createBag(rootDir, pathsIncluded, "sha1");
+    Bag bag = BagFactory.createBag(currentDir, pathsIncluded, "sha1");
     
     return bag;
   }
   
-  protected static Map<String, String> readBagInfoIfAvalable(String version, File currentDir) throws IOException{
-    Map<String,String> bagInfo = new HashMap<>();
+  protected static Map<String, List<String>> readBagInfoIfAvalable(Version version, Path currentDir) throws IOException{
+    Map<String,List<String>> bagInfo = new LinkedHashMap<>();
     
-    if(version.contains("0.97") || version.contains("0.96")){
-      File packageFile = new File(currentDir, "bag-info.txt");
-      if(packageFile.exists()){
+    if(version.equals(VERSION_97) || version.equals(VERSION_96)){
+      Path packageFile = currentDir.resolve(StructureConstants.BAG_INFO_TEXT_FILE_NAME);
+      if(Files.exists(packageFile)){
         bagInfo = readMultilineBagInfoFile(packageFile);
       }
-    }else if(version.contains("0.95") || version.contains("0.94") || version.contains("0.93")){
-      File packageFile = new File(currentDir, "package-info.txt");
-      if(packageFile.exists()){
+    }else if(version.equals(VERSION_95) || version.equals(VERSION_94) || version.equals(VERSION_93)){
+      Path packageFile = currentDir.resolve(StructureConstants.PACKAGE_INFO_TEXT_FILE_NAME);
+      if(Files.exists(packageFile)){
         bagInfo = readMultilineBagInfoFile(packageFile);
       }
     }
+    //TODO throw unsupported version exception
     
     return bagInfo;
   }
   
-  protected static Map<String, String> readMultilineBagInfoFile(File bagInfoFile) throws IOException{
-    Map<String, String> bagInfoMap = new HashMap<>();
+  protected static Map<String, List<String>> readMultilineBagInfoFile(Path bagInfoFile) throws IOException{
+    Map<String, List<String>> bagInfoMap = new HashMap<>();
 
-    List<String> lines = Files.readAllLines(Paths.get(bagInfoFile.toURI()));
+    List<String> lines = Files.readAllLines(bagInfoFile);
     if(lines.size() > 0){
       String[] firstLine = lines.get(0).split(":");
       String key = firstLine[0];
@@ -110,7 +116,9 @@ public class ConvertProcessor extends BagReader{
         if(parts.length == 1){ //continue from the previous line
           value+=parts[0];
         } else{
-          bagInfoMap.put(key, value);
+          List<String> values = new ArrayList<>();
+          values.add(value);
+          bagInfoMap.put(key, values);
           key=parts[0];
           value=parts[1];
         }
