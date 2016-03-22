@@ -3,6 +3,7 @@ package gov.loc.writer;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -18,6 +19,9 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
+
+import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
 
 import gov.loc.domain.Bag;
 import gov.loc.domain.Version;
@@ -114,25 +118,24 @@ public class BagWriter {
     writeManifest(dotBagDir, manifestFileName, manifest);
   }
 
-  protected static void writeManifest(Path dotBagDir, String manifestFileName, Map<String, String> manifest)
-      throws IOException {
+  protected static void writeManifest(Path dotBagDir, String manifestFileName, Map<String, String> manifest) throws IOException {
     Path manifestFile = dotBagDir.resolve(manifestFileName);
-    writeMapToFile(manifestFile, manifest, ' ');
+    writeMapToFile(manifestFile, manifest);
   }
 
-  protected static void writeMapToFile(Path output, Map<String, String> map, char delimiter) throws IOException {
+  protected static void writeMapToFile(Path output, Map<String, String> map) throws IOException {
     if (Files.exists(output)) {
       Files.delete(output);
       logger.debug("Deletion of file {} was successful? {}", output, Files.exists(output));
     }
-
-    try (BufferedWriter writer = Files.newBufferedWriter(output, StandardCharsets.UTF_8,
-        StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-      for (Entry<String, String> entry : map.entrySet()) {
-        StringBuilder line = new StringBuilder();
-        line.append(entry.getKey()).append(delimiter).append(entry.getValue()).append(System.lineSeparator());
-        writer.write(line.toString());
-      }
+    
+    OutputStream stream = Files.newOutputStream(output, StandardOpenOption.CREATE);
+    CsvWriter writer = new CsvWriter(stream, new CsvWriterSettings());
+    
+    for(Entry<String, String> entry : map.entrySet()){
+      writer.writeRow(new String[]{entry.getKey(), entry.getValue()});
     }
+    
+    writer.close();
   }
 }

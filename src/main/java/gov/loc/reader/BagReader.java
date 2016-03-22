@@ -2,6 +2,7 @@ package gov.loc.reader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -17,6 +18,9 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
+
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 
 import gov.loc.domain.Bag;
 import gov.loc.domain.Version;
@@ -173,8 +177,7 @@ public class BagReader {
     return getManifest(dotBagDir, StructureConstants.TAG_MANIFEST_FILE_NAME_REGEX);
   }
 
-  protected static Map<String, String> getManifest(Path dotBagDir, String regex)
-      throws InvalidBagStructureException, IOException {
+  protected static Map<String, String> getManifest(Path dotBagDir, String regex) throws InvalidBagStructureException, IOException {
     boolean foundManifestFile = false;
     Map<String, String> fileManifestMap = new HashMap<>();
 
@@ -182,7 +185,7 @@ public class BagReader {
     for(Path file : stream){
       if (file.getFileName().toString().matches(regex)) {
         foundManifestFile = true;
-        fileManifestMap = readKeyValueFile(file, " ");
+        fileManifestMap = readCSVFile(file);
       }
     }
 
@@ -191,6 +194,24 @@ public class BagReader {
     }
 
     return fileManifestMap;
+  }
+  
+  protected static Map<String,String> readCSVFile(Path file) throws IOException{
+    Map<String,String> map = new HashMap<>();
+    
+    CsvParserSettings settings = new CsvParserSettings();
+    settings.getFormat().setLineSeparator("\n");
+    
+    CsvParser parser = new CsvParser(settings);
+    InputStream stream = Files.newInputStream(file, StandardOpenOption.READ);
+    parser.beginParsing(stream);
+    
+    String[] row;
+    while ((row = parser.parseNext()) != null) {
+      map.put(row[0], row[1]);
+    }
+
+    return map;
   }
 
   protected static Map<String, String> readKeyValueFile(Path file, String delimiter)

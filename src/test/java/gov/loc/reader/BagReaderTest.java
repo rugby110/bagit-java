@@ -3,7 +3,9 @@ package gov.loc.reader;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +26,9 @@ public class BagReaderTest extends Assert {
     expectedBag.setHashAlgorithm("sha1");
     expectedBag.setRootDir(directory);
     expectedBag.setVersion(new Version(0, 98));
-    expectedBag.setBagInfo(new HashMap<String,List<String>>());
+    Map<String, List<String>> bagInfo = new LinkedHashMap<>();
+    bagInfo.put("foo", Arrays.asList("bar"));
+    expectedBag.setBagInfo(bagInfo);
     
     Map<String,String> tagManifest = new HashMap<>();
     tagManifest.put("bc91bfa1ed344269a304bb491dc52db8d6832513", "bagit.txt");

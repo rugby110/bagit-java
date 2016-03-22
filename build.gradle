@@ -16,7 +16,8 @@ targetCompatibility = 1.7
 dependencies {
   compile 'org.springframework.boot:spring-boot-starter-logging:latest.integration',
     'org.codehaus.groovy:groovy-all:latest.integration',
-    'org.yaml:snakeyaml:latest.integration'
+    'org.yaml:snakeyaml:latest.integration',
+    'com.univocity:univocity-parsers:latest.integration'
 
   testCompile 'junit:junit:4.12'
 }
