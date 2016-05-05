@@ -10,14 +10,13 @@ plugins{
 
 repositories {
     jcenter()
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 
 dependencies {
-    compile 'org.slf4j:slf4j-api:latest.integration',
+    compile project(':bagit-lib'), 
+    'org.slf4j:slf4j-api:latest.integration',
     'org.springframework.boot:spring-boot-starter-logging:latest.integration',
-    'org.codehaus.groovy:groovy-all:latest.integration',
-    'gov.loc:bagit:5.0.0-RC7-SNAPSHOT'
+    'org.codehaus.groovy:groovy-all:latest.integration'
 
     testCompile 'junit:junit:latest.integration'
 }
