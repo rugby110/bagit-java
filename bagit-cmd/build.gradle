@@ -1,0 +1,67 @@
+plugins{
+  id 'java'
+  id 'application'
+  id 'eclipse'
+  id "jacoco"
+  id "findbugs"
+  id "pmd"
+  id "nebula.os-package" version "2.2.6"
+}
+
+repositories {
+    jcenter()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+}
+
+dependencies {
+    compile 'org.slf4j:slf4j-api:latest.integration',
+    'org.springframework.boot:spring-boot-starter-logging:latest.integration',
+    'org.codehaus.groovy:groovy-all:latest.integration',
+    'gov.loc:bagit:5.0.0-RC7-SNAPSHOT'
+
+    testCompile 'junit:junit:latest.integration'
+}
+
+test { //show test output
+  testLogging.showStandardStreams = true
+}
+
+findbugsTest.enabled = false
+
+pmdTest.enabled = false
+pmd {
+  ruleSets = ["java-basic", "java-braces", "java-empty"]
+}
+
+check.dependsOn jacocoTestReport
+jacocoTestReport {
+  reports {
+      xml.enabled = true // coveralls plugin depends on xml format report
+      html.enabled = true
+  }
+}
+
+mainClassName = "gov.loc.rdc.Main"
+
+//package as rpm or deb
+ospackage {
+  packageName project.name.toLowerCase() //deb requires all lowercase package names
+  release '1'
+  os = LINUX // only applied to RPM
+  summary "A command line interface to the bagit-java library"
+  license "This software is in the Public Domain."
+  url "https://github.com/LibraryOfCongress/bagit-java"
+  vendor "Library of Congress"
+  buildHost InetAddress.localHost.hostName
+  
+  into '/opt/gov/loc/rdc/bagit-cmd'
+
+  requires("jre-1.8.0", "", GREATER | EQUAL)
+
+  from (startScripts) {
+    into "bin"
+    exclude "*.bat"
+  }
+  from (configurations.runtime) { into "lib" }
+  from (jar) { into "lib" }
+}

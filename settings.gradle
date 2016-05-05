@@ -1,1 +1,3 @@
-rootProject.name = 'bagit'
+rootProject.name = 'bagit-java'
+
+include 'bagit-lib', 'bagit-cmd'

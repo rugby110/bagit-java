@@ -1,28 +1,15 @@
-plugins {
-  id 'java'
-  id "com.github.kt3k.coveralls" version "2.5.0" //has to be in the main project for now see - https://discuss.gradle.org/t/how-do-i-include-buildscript-block-from-external-gradle-script/7016/2
-}
-apply from: 'eclipse.gradle'
-apply from: 'maven-central.gradle'
-apply from: 'code-quality.gradle'
+subprojects{
+  apply plugin: 'java'
+  apply from: '../eclipse.gradle'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
 
-if(project.version == "unspecified"){
-  project.version = "5.0-SNAPSHOT"
-}
+  if(project.version == "unspecified"){
+    project.version = "5.0-SNAPSHOT"
+  }
 
-repositories {
-  jcenter()
-}
-
-dependencies {
-  compile 'org.slf4j:slf4j-api:latest.integration'
-    
-  testCompile 'junit:junit:latest.integration', 
-    'org.springframework.boot:spring-boot-starter-logging:latest.integration',
-    'org.bouncycastle:bcprov-jdk15on:latest.integration',
-    'net.lingala.zip4j:zip4j:latest.integration',
-    'org.kamranzafar:jtar:latest.integration'
+  repositories {
+    jcenter()
+  }
 }

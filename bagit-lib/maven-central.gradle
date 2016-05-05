@@ -6,11 +6,13 @@ group = 'gov.loc'
 
 //javadocs and sources required for uploading to maven central
 task javadocJar(type: Jar) {
+  baseName = 'bagit'
   classifier = 'javadoc'
   from javadoc
 }
 
 task sourcesJar(type: Jar) {
+  baseName = 'bagit'
   classifier = 'sources'
   from sourceSets.main.allSource
 }
