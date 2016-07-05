@@ -1,0 +1,27 @@
+resources:
+- name: bagit-java-repo
+  type: git
+  source:
+    uri: https://github.com/LibraryOfCongress/bagit-java.git
+    branch: master
+
+jobs:
+- name: build bagit-java
+  plan:
+  - get: bagit-java-repo
+    trigger: true
+  - task: build-with-gradle
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: benediktg/gitlab-ci-java8}
+      inputs:
+        - name: bagit-java-repo
+          path: .
+      run:
+        path: gradle
+        args: ["check", "--stacktrace"]
+# because of https://issues.gradle.org/browse/GRADLE-2782
+      params: {TERM: dumb}
+
