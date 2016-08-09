@@ -1,0 +1,6 @@
+node{
+  jdk = tool name: 'java8u102' //must be configured in JENKINS beforehand!
+  env.JAVA_HOME = "${jdk}"
+//  git url: 'https://github.com/LibraryOfCongress/bagit-java.git'
+  sh './gradlew check'
+}
