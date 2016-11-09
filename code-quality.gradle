@@ -84,6 +84,19 @@ cpdCheck {
     source = sourceSets.main.allJava
 }
 
+dependencyCheck {
+    skipTestGroups=true
+    skipConfigurations=['findbugs','cpd'] //don't look for vulnerabilities in the build plugins
+    analyzers {
+      archiveEnabled=false
+      assemblyEnabled=false
+      experimentalEnabled=false
+      nuspecEnabled=false
+      pathToMono=false
+      zipExtensions=false
+    }
+}
+
 //Keep this for easy viewing of html findbugs report
 //tasks.withType(FindBugs) {
 //  reports {
