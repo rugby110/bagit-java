@@ -87,7 +87,8 @@ cpdCheck {
 dependencyCheck {
     skipTestGroups=true
     skipConfigurations=['findbugs','cpd'] //don't look for vulnerabilities in the build plugins
-    format=ALL
+    outputDirectory="build/reports/OWASP"
+    format="ALL"
     analyzers {
       archiveEnabled=false
       assemblyEnabled=false
